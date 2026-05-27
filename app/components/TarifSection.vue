@@ -34,7 +34,7 @@ const features = [
       style="background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(255,77,0,0.18), transparent 70%)"
     />
     <div class="relative max-w-4xl mx-auto px-5 sm:px-8">
-      <div :ref="t0" :style="revealStyle(s0)">
+      <div ref="t0" :style="revealStyle(s0)">
         <div class="text-center max-w-2xl mx-auto mb-12">
           <p class="text-[12px] tracking-[0.18em] uppercase text-[#FF8C00] mb-3 font-semibold">Tarif</p>
           <h2 class="text-[36px] sm:text-[48px] font-extrabold tracking-[-0.02em] leading-[1.05] text-[#F0F0F5]">
@@ -44,7 +44,7 @@ const features = [
         </div>
       </div>
 
-      <div :ref="t1" :style="revealStyle(s1, 150)">
+      <div ref="t1" :style="revealStyle(s1, 150)">
         <div class="relative">
           <div
             class="absolute -inset-6 rounded-[36px] pointer-events-none"
@@ -88,13 +88,15 @@ const features = [
               </li>
             </ul>
 
-            <button
+            <UButton
+              block
               @click="scrollToSignup"
-              class="cta-grad w-full text-white font-semibold text-[16px] py-4 rounded-2xl flex items-center justify-center gap-2 transition-all"
+              class="cta-grad text-white font-semibold text-[16px] py-4 rounded-2xl"
               style="box-shadow: 0 0 60px -10px rgba(255,77,0,0.8)"
+              trailing-icon="heroicons:arrow-right-solid"
             >
-              Démarrer maintenant <AppIcon name="arrow" :size="18" />
-            </button>
+              Démarrer maintenant
+            </UButton>
 
             <p class="mt-4 text-center text-[13px] text-[#8888A0] flex items-center justify-center gap-2">
               <AppIcon name="shield" :size="14" class="text-[#FF8C00]" />

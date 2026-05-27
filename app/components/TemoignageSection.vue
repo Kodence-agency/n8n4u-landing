@@ -14,7 +14,7 @@ function revealStyle(seen) {
 <template>
   <section id="temoignage" class="py-24 sm:py-32">
     <div class="max-w-3xl mx-auto px-5 sm:px-8">
-      <div :ref="target" :style="revealStyle(seen)">
+      <div ref="target" :style="revealStyle(seen)">
         <div
           class="relative rounded-3xl p-10 sm:p-14"
           style="background: linear-gradient(160deg,rgba(26,26,36,0.85),rgba(19,19,26,0.85)); border: 1px solid rgba(255,140,0,0.25); box-shadow: 0 0 80px -20px rgba(255,77,0,0.35)"

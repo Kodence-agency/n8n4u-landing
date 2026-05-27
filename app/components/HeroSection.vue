@@ -117,13 +117,14 @@ function revealStyle(seen, delay = 0, y = 24) {
 
         <div ref="t3" :style="revealStyle(s3, 360)">
           <div class="mt-9 flex flex-wrap items-center gap-4">
-            <button
+            <UButton
               @click="scrollToSignup"
-              class="cta-grad text-white font-semibold text-[15px] px-7 py-4 rounded-2xl flex items-center gap-2 transition-all"
+              class="cta-grad text-white font-semibold text-[15px] px-7 py-4 rounded-2xl"
               style="box-shadow: 0 0 44px -8px rgba(255,77,0,0.7)"
+              trailing-icon="heroicons:arrow-right-solid"
             >
-              Créer mon compte gratuitement <AppIcon name="arrow" :size="18" />
-            </button>
+              Créer mon compte gratuitement
+            </UButton>
             <a
               href="#valeur"
               class="text-[15px] font-medium text-[#F0F0F5] px-6 py-4 rounded-2xl border border-[#2A2A3A] hover:border-[#FF8C00]/50 hover:bg-white/[0.02] transition-all"

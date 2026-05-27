@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@nuxt/ui";
 
 /* Google Font: Inter 400/500/600/700/800 */
 /* Loaded via <link> in app.vue */

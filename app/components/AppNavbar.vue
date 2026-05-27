@@ -93,16 +93,18 @@ onUnmounted(() => {
         </ul>
 
         <!-- Desktop CTA -->
-        <button
+        <UButton
           @click="scrollToSignup"
           class="hidden md:flex cta-grad text-[13px] font-semibold pl-4 pr-2 py-1.5 rounded-full text-white items-center gap-2"
           style="box-shadow: 0 0 24px -6px rgba(255,77,0,0.6)"
         >
           Commencer pour 9,99€
-          <span class="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center">
-            <AppIcon name="arrow" :size="12" />
-          </span>
-        </button>
+          <template #trailing>
+            <span class="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center">
+              <AppIcon name="arrow" :size="12" />
+            </span>
+          </template>
+        </UButton>
 
         <!-- Mobile hamburger -->
         <button
@@ -150,13 +152,15 @@ onUnmounted(() => {
                 </a>
               </li>
             </ul>
-            <button
+            <UButton
               @click="open = false; scrollToSignup()"
-              class="cta-grad w-full mt-2 text-[14px] font-semibold py-3 rounded-xl text-white flex items-center justify-center gap-2"
+              block
+              class="cta-grad mt-2 text-[14px] font-semibold py-3 rounded-xl text-white"
               style="box-shadow: 0 0 30px -8px rgba(255,77,0,0.7)"
+              trailing-icon="heroicons:arrow-right-solid"
             >
-              Commencer pour 9,99€ <AppIcon name="arrow" :size="15" />
-            </button>
+              Commencer pour 9,99€
+            </UButton>
           </div>
         </div>
       </div>
