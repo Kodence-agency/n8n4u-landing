@@ -1,59 +1,62 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 
-const progress = ref(0)
-const currentStep = ref(0)
+const route = useRoute()
+const sessionId = route.query.session_id as string
+
+const serverStep = ref(0)
+const instanceUrl = ref('')
+const hasError = ref(false)
+let pollInterval: ReturnType<typeof setInterval> | null = null
 
 const steps = [
-  { label: 'Paiement confirmé', duration: 2000 },
-  { label: 'Allocation de votre serveur', duration: 18000 },
-  { label: 'Installation de n8n', duration: 35000 },
-  { label: 'Configuration de votre espace', duration: 25000 },
-  { label: 'Envoi de votre lien d\'accès', duration: 10000 },
+  'Paiement confirmé',
+  'Réception de votre commande',
+  'Allocation de votre serveur',
+  'Installation et configuration de n8n',
+  'Envoi de votre lien d\'accès',
 ]
 
-const totalDuration = steps.reduce((acc, s) => acc + s.duration, 0)
+const progressPercent = computed(() => {
+  const map: Record<number, number> = { 0: 10, 1: 25, 2: 55, 3: 80, 4: 100 }
+  return map[serverStep.value] ?? 10
+})
 
-let startTime: number
-let rafId: number
+const isDone = computed(() => serverStep.value >= 4)
 
-function animate(ts: number) {
-  if (!startTime) startTime = ts
-  const elapsed = ts - startTime
-  progress.value = Math.min((elapsed / totalDuration) * 100, 98)
-
-  let cumulative = 0
-  for (let i = 0; i < steps.length; i++) {
-    cumulative += steps[i].duration
-    if (elapsed < cumulative) {
-      currentStep.value = i
-      break
+async function poll() {
+  if (!sessionId) return
+  try {
+    const data = await $fetch<{ step: number; instanceUrl?: string; error?: string }>(
+      `/api/provision-status?session_id=${sessionId}`
+    )
+    serverStep.value = data.step
+    if (data.instanceUrl) instanceUrl.value = data.instanceUrl
+    if (data.error) hasError.value = true
+    if (isDone.value && pollInterval) {
+      clearInterval(pollInterval)
+      pollInterval = null
     }
-    currentStep.value = steps.length - 1
-  }
-
-  if (progress.value < 98) {
-    rafId = requestAnimationFrame(animate)
+  } catch {
+    // silently ignore network errors, keep polling
   }
 }
 
 onMounted(() => {
-  rafId = requestAnimationFrame(animate)
+  poll()
+  pollInterval = setInterval(poll, 3000)
 })
 
 onUnmounted(() => {
-  cancelAnimationFrame(rafId)
+  if (pollInterval) clearInterval(pollInterval)
 })
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col items-center justify-center px-4 py-16" style="background: #0D0D12">
 
-    <!-- Glow background -->
-    <div
-      class="fixed inset-0 pointer-events-none"
-      style="background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(255,77,0,0.12), transparent 70%)"
-    />
+    <div class="fixed inset-0 pointer-events-none" style="background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(255,77,0,0.12), transparent 70%)" />
 
     <div class="relative w-full max-w-lg text-center">
 
@@ -67,7 +70,6 @@ onUnmounted(() => {
         </svg>
       </div>
 
-      <!-- Title -->
       <h1 class="text-[32px] sm:text-[40px] font-extrabold tracking-[-0.02em] text-[#F0F0F5] mb-3">
         Merci pour votre confiance !
       </h1>
@@ -84,14 +86,16 @@ onUnmounted(() => {
         <!-- Progress bar -->
         <div class="mb-6">
           <div class="flex justify-between items-center mb-2">
-            <span class="text-[13px] font-semibold text-[#F0F0F5]">Provisionnement en cours…</span>
-            <span class="text-[13px] text-[#FF8C00] font-semibold tabular-nums">{{ Math.round(progress) }}%</span>
+            <span class="text-[13px] font-semibold text-[#F0F0F5]">
+              {{ isDone ? 'Provisionnement terminé ✓' : 'Provisionnement en cours…' }}
+            </span>
+            <span class="text-[13px] text-[#FF8C00] font-semibold tabular-nums">{{ progressPercent }}%</span>
           </div>
           <div class="h-2 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.07)">
             <div
-              class="h-full rounded-full transition-all duration-300"
+              class="h-full rounded-full transition-all duration-700"
               style="background: linear-gradient(90deg,#FF4D00,#FF8C00)"
-              :style="{ width: progress + '%' }"
+              :style="{ width: progressPercent + '%' }"
             />
           </div>
         </div>
@@ -99,29 +103,44 @@ onUnmounted(() => {
         <!-- Steps -->
         <ul class="space-y-3">
           <li
-            v-for="(step, i) in steps"
+            v-for="(label, i) in steps"
             :key="i"
             class="flex items-center gap-3 transition-all duration-500"
-            :class="i <= currentStep ? 'opacity-100' : 'opacity-30'"
+            :class="i <= serverStep ? 'opacity-100' : 'opacity-30'"
           >
-            <!-- Dot -->
-            <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center" :style="i < currentStep
-              ? 'background: linear-gradient(135deg,#FF4D00,#FF8C00)'
-              : i === currentStep
-                ? 'border: 2px solid #FF8C00; background: transparent'
-                : 'border: 2px solid rgba(255,255,255,0.12); background: transparent'
-            ">
-              <svg v-if="i < currentStep" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <div
+              class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+              :style="i < serverStep
+                ? 'background: linear-gradient(135deg,#FF4D00,#FF8C00)'
+                : i === serverStep
+                  ? 'border: 2px solid #FF8C00'
+                  : 'border: 2px solid rgba(255,255,255,0.12)'"
+            >
+              <svg v-if="i < serverStep" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <div v-else-if="i === currentStep" class="w-1.5 h-1.5 rounded-full bg-[#FF8C00] animate-pulse" />
+              <div v-else-if="i === serverStep" class="w-1.5 h-1.5 rounded-full bg-[#FF8C00] animate-pulse" />
             </div>
-
-            <span class="text-[14px]" :class="i <= currentStep ? 'text-[#F0F0F5]' : 'text-[#8888A0]'">
-              {{ step.label }}
+            <span class="text-[14px]" :class="i <= serverStep ? 'text-[#F0F0F5]' : 'text-[#8888A0]'">
+              {{ label }}
             </span>
           </li>
         </ul>
+
+        <!-- Done: show instance URL -->
+        <div v-if="isDone && instanceUrl" class="mt-6 pt-6 border-t border-white/10">
+          <a
+            :href="instanceUrl"
+            target="_blank"
+            class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-semibold text-[15px] text-white transition-opacity hover:opacity-90"
+            style="background: linear-gradient(135deg,#FF4D00,#FF8C00); box-shadow: 0 0 44px -10px rgba(255,77,0,0.7)"
+          >
+            Accéder à mon espace n8n
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
       </div>
 
       <!-- Info box -->
@@ -139,14 +158,11 @@ onUnmounted(() => {
         </div>
         <div class="flex items-start gap-3">
           <span class="text-[#FF8C00] mt-0.5 flex-shrink-0">→</span>
-          <p class="text-[#8888A0] text-[13px]">Enregistrez le lien reçu dans vos <span class="text-[#F0F0F5]">favoris</span> — c'est votre accès exclusif.</p>
+          <p class="text-[#8888A0] text-[13px]">Enregistrez le lien dans vos <span class="text-[#F0F0F5]">favoris</span> — c'est votre accès exclusif.</p>
         </div>
       </div>
 
-      <NuxtLink
-        to="/"
-        class="inline-block text-[#8888A0] hover:text-[#F0F0F5] text-[13px] transition-colors duration-200"
-      >
+      <NuxtLink to="/" class="inline-block text-[#8888A0] hover:text-[#F0F0F5] text-[13px] transition-colors duration-200">
         ← Retour à l'accueil
       </NuxtLink>
     </div>

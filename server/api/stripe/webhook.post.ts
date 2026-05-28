@@ -2,6 +2,7 @@ import type Stripe from 'stripe'
 import { getStripeClient } from '../../utils/stripe'
 import { runOnVps } from '../../utils/ssh'
 import { sendWelcomeEmail } from '../../utils/email'
+import { setProvisionStatus } from '../../utils/statusStore'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -46,6 +47,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return
   }
 
+  setProvisionStatus(session.id, { step: 1 })
+
   const subscriptionId = resolveId(session.subscription)
   const customerId = resolveId(session.customer)
 
@@ -56,16 +59,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   console.log('[stripe-webhook] Provisioning', { clientId, subdomain, email })
 
+  setProvisionStatus(session.id, { step: 2 })
+
   const output = await runOnVps(`/opt/saas/scripts/provision.sh ${clientId} ${subdomain} ${email}`)
 
   const lines = output.split('\n').filter((l) => l.startsWith('https://'))
   const instanceUrl = lines[lines.length - 1] ?? ''
+
+  setProvisionStatus(session.id, { step: 3, instanceUrl })
 
   // TODO: save mapping { subscriptionId, customerId, clientId, subdomain, email } to database
 
   console.log('[stripe-webhook] Provisioned', { subscriptionId, customerId, clientId, instanceUrl })
 
   await sendWelcomeEmail(email, instanceUrl)
+
+  setProvisionStatus(session.id, { step: 4, instanceUrl })
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
