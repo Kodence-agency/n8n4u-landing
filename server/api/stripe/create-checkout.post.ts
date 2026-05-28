@@ -1,4 +1,4 @@
-import { getStripeClient } from '../utils/stripe'
+import { getStripeClient } from '../../utils/stripe'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

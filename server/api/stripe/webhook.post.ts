@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
-import { getStripeClient } from '../utils/stripe'
-import { runOnVps } from '../utils/ssh'
-import { sendWelcomeEmail } from '../utils/email'
+import { getStripeClient } from '../../utils/stripe'
+import { runOnVps } from '../../utils/ssh'
+import { sendWelcomeEmail } from '../../utils/email'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
