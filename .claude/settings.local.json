@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone *)",
+      "Bash(pnpm add *)",
+      "Bash(/c/Users/OmarNadif/AppData/Roaming/npm/pnpm.cmd add *)",
+      "Bash(where pnpm *)",
+      "Read(//c/Users/OmarNadif/AppData/Local/pnpm//**)",
+      "Read(//c/Users/OmarNadif/**)",
+      "PowerShell(ls \"$env:LOCALAPPDATA\\\\pnpm\\\\\" 2>$null; ls \"$env:APPDATA\\\\npm\\\\\" 2>$null)",
+      "PowerShell(npm *)",
+      "Bash(pnpm dev *)",
+      "PowerShell(Out-Null *)",
+      "PowerShell(npm run *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('version:', d.get\\('version'\\)\\); print\\('exports keys:', list\\(\\(d.get\\('exports'\\) or {}\\).keys\\(\\)\\)[:10]\\)\")",
+      "PowerShell($nuxtUiPkg = Get-Content \"C:\\\\Users\\\\OmarNadif\\\\Desktop\\\\n8nforyou\\\\node_modules\\\\@nuxt\\\\ui\\\\package.json\" | ConvertFrom-Json; \"Nuxt UI version: \" + $nuxtUiPkg.version; $zodPkg = Get-Content \"C:\\\\Users\\\\OmarNadif\\\\Desktop\\\\n8nforyou\\\\node_modules\\\\zod\\\\package.json\" | ConvertFrom-Json; \"Zod version: \" + $zodPkg.version)",
+      "PowerShell($pkg = Get-Content \"C:\\\\Users\\\\OmarNadif\\\\Desktop\\\\n8nforyou\\\\node_modules\\\\@nuxt\\\\ui\\\\package.json\" | ConvertFrom-Json; $pkg.exports | ConvertTo-Json -Depth 3 | Select-Object -First 30)"
+    ]
+  }
+}

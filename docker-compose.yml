@@ -1,0 +1,18 @@
+services:
+  n8n4you-site:
+    build: .
+    container_name: n8n4you-site
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n4you-site.rule=Host(`n8n4you.com`) || Host(`www.n8n4you.com`)"
+      - "traefik.http.routers.n8n4you-site.entrypoints=websecure"
+      - "traefik.http.routers.n8n4you-site.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n4you-site.loadbalancer.server.port=3000"
+
+networks:
+  web:
+    external: true
