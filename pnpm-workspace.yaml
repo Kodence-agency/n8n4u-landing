@@ -1,9 +1,2 @@
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - cpu-features
-  - esbuild
-  - ssh2
-  - vue-demi
-
 minimumReleaseAgeExclude:
   - stripe
