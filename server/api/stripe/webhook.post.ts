@@ -11,9 +11,6 @@ export default defineEventHandler(async (event) => {
   const rawBody = await readRawBody(event, false)
   const signature = getHeader(event, 'stripe-signature')
 
-  console.log('[stripe-webhook] secret loaded:', !!useRuntimeConfig().stripeWebhookSecret)
-  console.log('[stripe-webhook] rawBody type:', typeof rawBody, 'length:', rawBody?.length)
-
   if (!rawBody || !signature) {
     throw createError({ statusCode: 400, statusMessage: 'Missing body or Stripe-Signature header' })
   }
