@@ -15,14 +15,22 @@ const schema = z.object({
 
 const state = reactive({ prenom: '', nom: '', email: '', pwd: '' })
 const loading = ref(false)
-const done = ref(false)
+const error = ref<string>('')
 const showPwd = ref(false)
 
 async function onSubmit() {
   loading.value = true
-  await new Promise(r => setTimeout(r, 1400))
-  loading.value = false
-  done.value = true
+  error.value = ''
+  try {
+    const { url } = await $fetch<{ url: string }>('/api/stripe/create-checkout', {
+      method: 'POST',
+      body: { email: state.email },
+    })
+    window.location.href = url
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Une erreur est survenue. Veuillez réessayer.'
+    loading.value = false
+  }
 }
 
 function revealStyle(seen, delay = 0) {
@@ -61,23 +69,8 @@ function revealStyle(seen, delay = 0) {
             class="relative rounded-3xl p-7 sm:p-10"
             style="background: linear-gradient(180deg,rgba(26,26,36,0.85),rgba(19,19,26,0.85)); border: 1px solid rgba(255,140,0,0.25); backdrop-filter: blur(12px)"
           >
-            <!-- Success state -->
-            <div v-if="done" class="text-center py-10">
-              <div
-                class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-5 success-pop"
-                style="background: linear-gradient(135deg,#FF4D00,#FF8C00); box-shadow: 0 0 60px -10px rgba(255,140,0,0.7)"
-              >
-                <AppIcon name="check" :size="32" class="text-white" :stroke="3" />
-              </div>
-              <h3 class="text-[22px] font-bold text-[#F0F0F5] mb-2">🎉 Bienvenue, {{ state.prenom }} !</h3>
-              <p class="text-[14.5px] text-[#8888A0]">
-                Votre espace est en cours de création.<br />
-                Un email de confirmation arrive à <span class="text-[#F0F0F5]">{{ state.email }}</span>.
-              </p>
-            </div>
-
             <!-- Form -->
-            <UForm v-else :schema="schema" :state="state" @submit="onSubmit" class="space-y-4">
+            <UForm :schema="schema" :state="state" @submit="onSubmit" class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <UFormField name="prenom" label="Prénom">
                   <UInput
@@ -136,6 +129,7 @@ function revealStyle(seen, delay = 0) {
                   </template>
                 </UInput>
               </UFormField>
+              <p v-if="error" class="text-[13px] text-red-400 text-center">{{ error }}</p>
               <UButton
                 type="submit"
                 :loading="loading"
